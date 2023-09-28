@@ -27,7 +27,7 @@ async function sendVerificationEmail(email, otp){
     }
 }
 
-OTPSchema.pre("save", async function(next) {
+OTPSchema.pre("save", async function(next) { //this pre function will run everytime the "create" command is called on this model
     await sendVerificationEmail(this.email, this.otp)
     next()
 })
