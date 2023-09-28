@@ -62,6 +62,103 @@ exports.sendOTP = async(req, res) => {
 }
 
 //signup
+exports.signUp = async (req, res) => {
+try {
+        //data fetch from req body
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            confirmPassword,
+            accountType,
+            contactNumber,
+            otp
+        } = req.body
+    
+        //validate data
+        if(!firstName || !lastName || !email || !password || !confirmPassword || !otp){
+            return res.status(403).json({
+                success: false,
+                message: "All fields are required"
+            })
+        }
+    
+        //2 password match
+        if(password !== confirmPassword){
+            return res.status(400).json({
+                success: false,
+                message: "password and confirm password value does not match"
+            })
+        }
+    
+        //check user already exist
+        const existingUser = await User.findOne({email})
+        if(existingUser){
+            return res.status(400).json({
+                success: false,
+                message: "User is already registered"
+            })
+        }
+    
+        //find most recent OTP for the user
+        const recentOtp = await OTP.find({email}).sort({createdAt: -1}).limit(1)
+        console.log("recent otp", recentOtp)
+    
+        //validate OTP
+        if(recentOtp.length == 0){
+            //OTP not found
+            return res.status(400).json({
+                success: false,
+                message: "OTP not found"
+            })
+        } else if (otp != recentOtp.otp){
+            //invalid OTP
+            return res.status(400).json({
+                success: false,
+                message: "Invalid otp"
+            })
+        }
+    
+        //Hash password
+        const hashedPassword = await bcrypt.hash(password, 10)
+    
+    
+        //create entry in db
+        const profileDetails = await Profile.create({
+            gender: null,
+            dateOfBirth: null,
+            about: null,
+            contactNumber: null,
+        })
+    
+        const user = await User.create({
+            firstName,
+            lastName,
+            email,
+            contactNumber,
+            password: hashedPassword,
+            accountType,
+            additionalDetails: profileDetails._id,
+            image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
+    
+        })
+        
+        //return res
+        return res.status(200).json({
+            success: true,
+            message: "User is registered successfylly"
+            user,
+        })
+} catch (error) {
+    console.log(error)
+    return res.status(500).json({
+        success: false,
+        message: "user cannot be registered please try again"
+    })
+}
+    
+}
 
 //login
 
