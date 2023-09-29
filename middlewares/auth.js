@@ -38,13 +38,31 @@ exports.auth = async (req, res, next) => {
     }
 }
 
-//isStudent
+//isInstructor
 exports.isInstructor = async (req, res, next) => {
     try {
          if(req.user.accountType != "Instructor"){
             return res.status(401).json({
                 success: false,
                 message: "This is a protected route for Instructors only"
+            }) 
+         }
+         next()
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "user role cannot be verified"
+        })
+    }
+}
+
+//isAdmin
+exports.isAdmin = async (req, res, next) => {
+    try {
+         if(req.user.accountType != "Admin"){
+            return res.status(401).json({
+                success: false,
+                message: "This is a protected route for Admin only"
             }) 
          }
          next()
