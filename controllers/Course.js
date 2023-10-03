@@ -1,21 +1,20 @@
 const Course = require("../models/Course")
-const Tag = require("../models/tags")
 const User = require("../models/User")
 
 const {uploadImageToCloudinary} = require("../utils/imageUploader")
+const Category = require("../models/Category")
 
 //createCourse handler function
 exports.createCourse = async(req, res) => {
     try {
         //fetch data
-        const {courseName, courseDescription, whatYouWillLearn, price, tag} = req.body
+        const {courseName, courseDescription, whatYouWillLearn, price, tag, category, status, instructions} = req.body
 
         //get thumbnail
         const thumbnail = req.files.thumbnailImage
 
-
         //validation
-        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !tag || !thumbnail){
+        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !tag || !thumbnail || !category){
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -24,7 +23,9 @@ exports.createCourse = async(req, res) => {
 
         //check for instructor
         const userId = req.user.id;
-        const instructorDetails = await User.findById(userId)
+        const instructorDetails = await User.findById(userId, {
+            accountType: "Instructor"
+        })
         console.log("instructor details", instructorDetails)
 
         if(!instructorDetails){
@@ -35,13 +36,13 @@ exports.createCourse = async(req, res) => {
         }
 
         //check given tag is valid or not
-        const tagDetails = await Tag.findById(tag)
-        if(!tagDetails){
-            return res.status(404).json({
-                success: false,
-                message: "tag details not found"
-            })
-        }
+        const categoryDetails = await Category.findById(category);
+		if (!categoryDetails) {
+			return res.status(404).json({
+				success: false,
+				message: "Category Details Not Found",
+			});
+		}
         
         //Upload image to Cloudinary
         const thumbnailImage = await uploadImageToCloudinary(thumbnail, process.env.FOLDER_NAME)
@@ -53,8 +54,11 @@ exports.createCourse = async(req, res) => {
             instructor: instructorDetails._id,
             whatYouWillLearn,
             price,
-            tag: tagDetails._id,
+            tag: tag,
+            category: categoryDetails._id,
             thumbnail: thumbnailImage.secure_url,
+            status: status,
+            instructions: instructions
         })
 
         //add the new course to the user schema of instructor
@@ -71,9 +75,9 @@ exports.createCourse = async(req, res) => {
         )
 
         //update the tag schema
-        await Tag.findByIdAndUpdate(
+        await Category.findByIdAndUpdate(
             {
-               id: tagDetails._id 
+               _id: category
             },
             {
                 $push: {
@@ -101,7 +105,7 @@ exports.createCourse = async(req, res) => {
 
 //getALLcourses handler Function
 
-exports.showAllCourses = async (req, res) => {
+exports.getAllCourses = async (req, res) => {
     try{
         const allCourses = await Course.find({}, {courseName: true,
                                                 price: true, thumbnail: true,
