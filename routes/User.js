@@ -1,7 +1,8 @@
+// Import the required modules
 const express = require("express")
 const router = express.Router()
 
-// Import controllers and middleware functions
+// Import the required controllers and middleware functions
 const {
   login,
   signup,
@@ -13,7 +14,7 @@ const {
   resetPassword,
 } = require("../controllers/ResetPassword")
 
-const { auth } = require("../middleware/auth")
+const { auth } = require("../middlewares/auth")
 
 // Routes for Login, Signup, and Authentication
 

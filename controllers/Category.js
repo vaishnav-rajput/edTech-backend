@@ -35,21 +35,21 @@ exports.createCategory = async (req, res) => {
 }
 
 // //get all category handler function
-// exports.showAllCategories = async (req, res) => {
-//     try {
-//         const allCategories = await Category.find({}, {name: true, description: true })
-//         res.status(200).json({
-//             success: true,
-//             message: "ALl tags returned successfully",
-//             data: allCategories
-//         })
-//     } catch (error) {
-//         return res.status(500).json({
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
+exports.showAllCategories = async (req, res) => {
+    try {
+        const allCategories = await Category.find({}, {name: true, description: true })
+        res.status(200).json({
+            success: true,
+            message: "ALl tags returned successfully",
+            data: allCategories
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 //categoryPageDetails
 exports.categoryPageDetails = async (req, res) => {
